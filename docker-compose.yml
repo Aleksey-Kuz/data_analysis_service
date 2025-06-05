@@ -92,8 +92,8 @@ services:
           echo "   https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html#before-you-begin"
           echo
         fi
-        mkdir -p /sources/{logs,dags,plugins,jira}
-        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins,jira}
+        mkdir -p /sources/{logs,dags}
+        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags}
         ls -l /sources
         airflow sync-perm --include-dags
         exec /entrypoint airflow version
