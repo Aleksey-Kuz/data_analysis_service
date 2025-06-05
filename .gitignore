@@ -58,6 +58,5 @@ venv*/
 airflow/logs/scheduler
 al_postgre/logs/scheduler
 
-
 catboost_info/
 .ipynb_checkpoints/
