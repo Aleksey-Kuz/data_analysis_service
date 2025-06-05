@@ -1,4 +1,4 @@
-FROM apache/airflow:2.10.5-python3.9
+FROM apache/airflow:2.10.5-python3.10
 
 USER root
 
@@ -12,7 +12,7 @@ RUN mkdir -p /opt/airflow/scripts \
     && chown -R airflow:root /opt/airflow/scripts \
     && chmod -R 775 /opt/airflow/scripts
 
-COPY ./airflow/scripts/ /opt/airflow/scripts/
+COPY ./scripts/ /opt/airflow/scripts/
 
 USER airflow
 

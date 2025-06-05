@@ -10,7 +10,8 @@ logging.basicConfig(
 )
 
 
-ENV_VARS = {}
+ENV_VARS = {
+}
 
 
 def add_variadle(key, val):
