@@ -16,7 +16,7 @@ from tasks.data_validation_tasks import (
 
 
 @dag(
-    dag_id="stt_jira_delete_issues",
+    dag_id="data_validation",
     start_date=datetime(2024, 1, 1),
     params={"filename": "test_car_csv.csv"},
     schedule_interval=None,
@@ -26,7 +26,7 @@ from tasks.data_validation_tasks import (
             "User": ["can_edit", "can_read"],
         }
 )
-def stt_jira_delete_issues():
+def data_validation():
     """ DAG flow """
     issues_df = uploading_data()
     issues_df = check_missing_values(issues_df)
@@ -36,4 +36,4 @@ def stt_jira_delete_issues():
     return issues_df
 
 
-stt_jira_delete_issues_dag = stt_jira_delete_issues()
+data_validation_dag = data_validation()
