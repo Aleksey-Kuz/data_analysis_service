@@ -62,3 +62,4 @@ catboost_info/
 .ipynb_checkpoints/
 
 data/
+logs/
