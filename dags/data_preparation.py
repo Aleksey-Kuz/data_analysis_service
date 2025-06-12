@@ -40,7 +40,7 @@ def data_preparation():
     """DAG flow"""
     input_data = uploading_data(VAR_DATASET_ROOT_DIR, VAR_DATASET_DIR_NAME)
     prepared_data = preparate_data(input_data)
-    save_data(VAR_PREPARED_DATA_ROOT_DIR, VAR_PREPARED_DATA_DIR_NAME, prepared_data)
+    save_data(VAR_PREPARED_DATA_ROOT_DIR, VAR_PREPARED_DATA_DIR_NAME, "prepared", prepared_data)
 
 
 data_preparation_dag = data_preparation()
