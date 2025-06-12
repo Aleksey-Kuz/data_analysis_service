@@ -94,5 +94,5 @@ def generate_car_data(filepath: Path, num_samples: int):
 
 
 if __name__ == "__main__":
-    path_to_file = Path().resolve().parent / "data" / "datasets" / "test_car_csv.csv"
+    path_to_file = Path().cwd().parent / "data" / "datasets" / "test_car_csv.csv"
     generate_car_data(path_to_file, 100_000)

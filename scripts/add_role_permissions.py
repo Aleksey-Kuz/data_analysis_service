@@ -104,7 +104,8 @@ def update_role_permissions(role_name):
                 "accept": "application/json",
                 "Content-Type": "application/json",
                 "Authorization": f"Basic {BASIC_AUTH}"
-            }
+            },
+            timeout=10
         )
 
         if response.status_code == 200:

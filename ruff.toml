@@ -11,6 +11,8 @@ target-version = "py39"
 # McCabe complexity (`C901`) by default.
 select = ["ALL"]
 ignore = [
+    "LOG015",
+    "T201",
     "INP001",
     "I001",
     "DTZ001",
