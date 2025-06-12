@@ -9,7 +9,7 @@ from airflow.models.param import Param
 from tasks.data_tasks import (
     uploading_data
 )
-from tasks.data_tasks import (
+from tasks.model_tasks import (
     models_training,
     models_evaluating,
     choice_model,
