@@ -25,3 +25,21 @@ def choice_model():
 def save_model():
     """ """
     return None
+
+
+@task
+def load_model():
+    """ """
+    return None
+
+
+@task
+def deployed_model():
+    """ """
+    return None
+
+
+@task
+def get_predictions():
+    """ """
+    return None
