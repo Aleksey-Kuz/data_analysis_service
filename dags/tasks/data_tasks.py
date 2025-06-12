@@ -107,6 +107,7 @@ def save_data(var_root_dir, var_dir_name, file_prefix: str, data: pd.DataFrame, 
     file_type = context.get("params").get("file_type")
     output_file = f"{file_prefix}_{file_name}_{date}.{file_type}"
     output_path = Path(root_dir) / dir_name / output_file
+    logger.info(f"Saving data to {output_path} as {file_type.upper()} file.")
     if not output_path.parent.exists():
         raise FileNotFoundError(f"Directory {output_path.parent} does not exist.")
     if file_type == 'csv':
