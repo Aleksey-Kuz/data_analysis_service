@@ -43,3 +43,9 @@ def deployed_model():
 def get_predictions():
     """ """
     return None
+
+
+@task
+def get_model_metrics():
+    """ """
+    return None
