@@ -98,8 +98,21 @@ def preparate_data(data: pd.DataFrame) -> pd.DataFrame:
 
 
 @task
-def save_data(data):
-    """Save data to a database"""
-    # Here you would implement the logic to save data to a database
-    # For example, using SQLAlchemy or a similar library
-    return "Data saved to database successfully"
+def save_data(var_root_dir, var_dir_name, file_prefix: str, data: pd.DataFrame, **context) -> None:
+    """Save data to a file"""
+    root_dir = Variable.get(var_root_dir)
+    dir_name = Variable.get(var_dir_name)
+    file_name = context.get("params").get("file_name")
+    date = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    file_type = context.get("params").get("file_type")
+    output_file = f"{file_prefix}_{file_name}_{date}.{file_type}"
+    output_path = Path(root_dir) / dir_name / output_file
+    if not output_path.parent.exists():
+        raise FileNotFoundError(f"Directory {output_path.parent} does not exist.")
+    if file_type == 'csv':
+        data.to_csv(output_path, index=False)
+    elif file_type == 'excel':
+        data.to_excel(output_path, index=False)
+    else:
+        raise ValueError(f"Unsupported file type: {file_type}")
+    logger.info(f"Data saved to {output_path}.")

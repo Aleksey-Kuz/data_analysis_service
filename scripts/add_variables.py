@@ -21,6 +21,9 @@ ENV_VARS = {
     "EVALUATION_DIR_NAME": os.getenv("EVALUATION_DIR_NAME", "data_evaluation"),
     "RESULTS_ROOT_DIR": os.getenv("RESULTS_ROOT_DIR", "/opt/airflow/data"),
     "RESULTS_DIR_NAME": os.getenv("RESULTS_DIR_NAME", "model_results"),
+    "PREPARED_DATA_ROOT_DIR": os.getenv("PREPARED_DATA_ROOT_DIR", "/opt/airflow/data"),
+    "PREPARED_DATA_DIR_NAME": os.getenv("PREPARED_DATA_DIR_NAME", "prepared_data"),
+    "OUTPUT_FILE_TYPE": os.getenv("OUTPUT_FILE_TYPE", "csv"),
 }
 
 
