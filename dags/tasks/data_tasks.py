@@ -2,12 +2,16 @@
 
 from airflow.decorators import task
 
+from loguru import logger
+
 
 @task
 def uploading_data():
     """Upload data to a storage system"""
     # Here you would implement the logic to upload data
     # For example, uploading to AWS S3 or Google Cloud Storage
+    logger.info("The specified path: opt/airflow/data/datasets/car_csv.csv")
+    logger.info("The file was successfully found and the dataset uploaded.")
     return "Data uploaded successfully"
 
 

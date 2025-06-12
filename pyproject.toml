@@ -6,17 +6,19 @@ authors = [
     {name = "Aleksey Kuznetsov",email = "alex89202226090@yandex.ru"}
 ]
 readme = "README.md"
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.10,<3.13"
 dependencies = [
     "ruff (>=0.11.12,<0.12.0)",
-    "numpy (>=2.2.6,<3.0.0)",
+    "numpy (>=1.24,<2.2)",
     "pandas (>=2.3.0,<3.0.0)",
     "scikit-learn (>=1.6.1,<2.0.0)",
     "catboost (>=1.2.8,<2.0.0)",
     "notebook (>=7.4.3,<8.0.0)",
     "joblib (>=1.5.1,<2.0.0)",
     "loguru (>=0.7.3,<0.8.0)",
-    "requests (>=2.32.3,<3.0.0)"
+    "requests (>=2.32.3,<3.0.0)",
+    "dotenv (>=0.9.9,<0.10.0)",
+    "ydata-profiling (>=4.16.1,<5.0.0)"
 ]
 
 
