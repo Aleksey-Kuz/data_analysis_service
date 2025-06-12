@@ -1,4 +1,5 @@
 import logging
+import os
 from airflow.models import Variable
 
 
@@ -10,6 +11,12 @@ logging.basicConfig(
 
 
 ENV_VARS = {
+    "MODEL_ROOT_DIR": os.getenv("MODEL_ROOT_DIR", "opt/airflow/models"),
+    "MODEL_DIR_NAME": os.getenv("MODEL_DIR_NAME", "demo_models"),
+    "MODEL_DEFAULT": os.getenv("MODEL_DEFAULT", "catboost"),
+    "DATASET_ROOT_DIR": os.getenv("DATASET_ROOT_DIR", "opt/airflow/data"),
+    "DATASET_DIR_NAME": os.getenv("DATASET_DIR_NAME", "demo_datasets"),
+    "DATASET_FILE_NAME": os.getenv("DATASET_FILE_NAME", "demo_dataset.csv"),
 }
 
 
