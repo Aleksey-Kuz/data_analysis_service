@@ -63,3 +63,4 @@ catboost_info/
 
 data/
 logs/
+*.log
