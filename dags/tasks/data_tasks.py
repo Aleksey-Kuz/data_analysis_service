@@ -1,4 +1,4 @@
-"""Tasks for STT/ASR DAGs"""
+"""Tasks for data processing"""
 
 from airflow.decorators import task
 
