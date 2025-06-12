@@ -64,3 +64,6 @@ catboost_info/
 data/
 logs/
 *.log
+
+models/
+evaluations/

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from airflow.decorators import task
 from airflow.models import Variable
@@ -67,8 +67,34 @@ def save_evaluation_results(var_evaluation_root_dir: str, var_evaluation_dir_nam
 
 @task
 def preparate_data(data: pd.DataFrame) -> pd.DataFrame:
-    """Prepare data for further use in machine learning models"""
-    pass
+    """Prepare data for further use in machine learning models."""
+    logger.info("Starting data preprocessing.")
+
+    # Drop columns that are completely empty
+    initial_shape = data.shape
+    data.dropna(axis=1, how='all', inplace=True)
+    logger.info(f"Removed empty columns. Shape: {initial_shape} → {data.shape}")
+
+    # Fill missing values: mean for numeric columns, 'Unknown' for categorical
+    for col in data.columns:
+        if data[col].dtype in [np.float64, np.int64]:
+            mean_value = data[col].mean()
+            data[col].fillna(mean_value, inplace=True)
+            logger.info(f"Filled missing values in numeric column '{col}' with mean: {mean_value:.2f}")
+        elif data[col].dtype == object:
+            data[col].fillna('Unknown', inplace=True)
+            logger.info(f"Filled missing values in categorical column '{col}' with 'Unknown'")
+
+    # Encode categorical columns with LabelEncoder
+    label_encoders = {}
+    for col in data.select_dtypes(include='object').columns:
+        le = LabelEncoder()
+        data[col] = le.fit_transform(data[col])
+        label_encoders[col] = le
+        logger.info(f"Encoded categorical column '{col}' with LabelEncoder.")
+
+    logger.info(f"Preprocessing complete. Final shape: {data.shape}")
+    return data
 
 
 @task

@@ -33,7 +33,7 @@ VAR_EVALUATION_DIR_NAME = Config.VAR_EVALUATION_DIR_NAME
     },
 )
 def data_evaluation():
-    """DAG flow"""
+    """DAG to evaluate the quality of the received data"""
     input_data = uploading_data(VAR_DATASET_ROOT_DIR, VAR_DATASET_DIR_NAME)
     evaluation_results = evaluate_data_quality(input_data)
     save_evaluation_results(VAR_EVALUATION_ROOT_DIR, VAR_EVALUATION_DIR_NAME, evaluation_results["file_name"],
