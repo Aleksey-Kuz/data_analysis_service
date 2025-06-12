@@ -10,6 +10,7 @@ from tasks.data_tasks import (
     uploading_data
 )
 from tasks.model_tasks import (
+    check_data_quality,
     models_training,
     models_evaluating,
     choice_model,
@@ -30,6 +31,7 @@ from tasks.model_tasks import (
 def model_train():
     """DAG flow"""
     input_data = uploading_data()
+    check_data_quality(input_data)
     models_training()
     models_evaluating()
     choice_model()

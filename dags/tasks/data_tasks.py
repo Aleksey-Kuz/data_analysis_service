@@ -8,8 +8,10 @@ from airflow.decorators import task
 from airflow.models import Variable
 
 import pandas as pd
+import numpy as np
 from loguru import logger
 from ydata_profiling import ProfileReport
+from sklearn.preprocessing import LabelEncoder
 
 
 @task
@@ -38,17 +40,7 @@ def evaluate_data_quality(data: pd.DataFrame, **context) -> Dict[str, Any]:
         data,
         title=f"Data Quality Report for {file_name} | {date_now}",
         explorative=True,
-        minimal=False,
-        correlations={
-            "pearson": True,
-            "spearman": True,
-            "kendall": False
-        },
-        missing_diagrams={
-            "bar": True,
-            "matrix": True,
-            "heatmap": False
-        }
+        minimal=False
     )
     logger.info("Data quality evaluation completed.")
     result = {
@@ -74,11 +66,9 @@ def save_evaluation_results(var_evaluation_root_dir: str, var_evaluation_dir_nam
 
 
 @task
-def preparate_data():
+def preparate_data(data: pd.DataFrame) -> pd.DataFrame:
     """Prepare data for further use in machine learning models"""
-    # Here you would implement the logic to prepare data
-    # For example, cleaning, transforming, or feature engineering
-    return "Data prepared successfully"
+    pass
 
 
 @task

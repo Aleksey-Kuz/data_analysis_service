@@ -4,6 +4,12 @@ from airflow.decorators import task
 
 
 @task
+def check_data_quality():
+    """Check the quality of the data"""
+    return True
+
+
+@task
 def models_training():
     """ """
     return list()
