@@ -27,7 +27,7 @@ def data_preparation():
     """DAG flow"""
     input_data = uploading_data()
     prepare_data = data_preparation()
-    save_data()
+    save_data(prepare_data)
 
 
 data_preparation_dag = data_preparation()
