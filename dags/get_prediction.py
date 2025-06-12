@@ -1,4 +1,4 @@
-"""Dag for model training"""
+"""Dag for getting predictions"""
 
 from datetime import datetime, timedelta
 
