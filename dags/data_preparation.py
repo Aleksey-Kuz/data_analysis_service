@@ -8,7 +8,7 @@ from airflow.models.param import Param
 
 from tasks.data_tasks import (
     uploading_data,
-    data_preparation,
+    preparate_data,
     save_data
 )
 
@@ -26,7 +26,7 @@ from tasks.data_tasks import (
 def data_preparation():
     """DAG flow"""
     input_data = uploading_data()
-    prepare_data = data_preparation()
+    prepare_data = preparate_data()
     save_data(prepare_data)
 
 

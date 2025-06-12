@@ -26,7 +26,7 @@ def save_evaluation_results(evaluation_results):
 
 
 @task
-def data_preparation():
+def preparate_data():
     """Prepare data for further use in machine learning models"""
     # Here you would implement the logic to prepare data
     # For example, cleaning, transforming, or feature engineering
