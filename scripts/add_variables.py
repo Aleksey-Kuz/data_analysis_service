@@ -17,6 +17,8 @@ ENV_VARS = {
     "DATASET_ROOT_DIR": os.getenv("DATASET_ROOT_DIR", "opt/airflow/data"),
     "DATASET_DIR_NAME": os.getenv("DATASET_DIR_NAME", "demo_datasets"),
     "DATASET_FILE_NAME": os.getenv("DATASET_FILE_NAME", "demo_dataset.csv"),
+    "EVALUATION_ROOT_DIR": os.getenv("EVALUATION_ROOT_DIR", "opt/airflow/evaluation"),
+    "EVALUATION_DIR_NAME": os.getenv("EVALUATION_DIR_NAME", "data_evaluation"),
 }
 
 

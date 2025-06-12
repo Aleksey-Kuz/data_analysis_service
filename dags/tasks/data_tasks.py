@@ -1,32 +1,76 @@
 """Tasks for data processing"""
 
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List
+
 from airflow.decorators import task
+from airflow.models import Variable
 
+import pandas as pd
 from loguru import logger
+from ydata_profiling import ProfileReport
 
 
 @task
-def uploading_data():
+def uploading_data(var_dataset_root_dir: str, var_dataset_dir_name: str, **context) -> pd.DataFrame:
     """Upload data to a storage system"""
-    # Here you would implement the logic to upload data
-    # For example, uploading to AWS S3 or Google Cloud Storage
-    logger.info("The specified path: opt/airflow/data/datasets/car_csv.csv")
-    logger.info("The file was successfully found and the dataset uploaded.")
-    return "Data uploaded successfully"
+    dataset_root_dir = Variable.get(var_dataset_root_dir)
+    dataset_dir_name = Variable.get(var_dataset_dir_name)
+    file_name = context.get("params").get("file_name")
+    file_path = Path(dataset_root_dir) / dataset_dir_name / file_name
+    logger.info(f"Uploading data from {file_path}.")
+    if not file_path.exists():
+        raise FileNotFoundError(f"File {file_path} does not exist.")
+    logger.info(f"File {file_path} found. Reading data.")
+    data = pd.read_csv(file_path)
+    logger.info(f"Data read successfully with shape {data.shape}.")
+    return data
 
 
 @task
-def evaluate_data_quality():
+def evaluate_data_quality(data: pd.DataFrame, **context) -> Dict[str, Any]:
     """Evaluate the quality of the received data by ydata-profiling"""
-    return ""
+    file_name = context.get("params").get("file_name")
+    date_now = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    logger.info(f"Evaluating data quality for {file_name} at {date_now}.")
+    profile = ProfileReport(
+        data,
+        title=f"Data Quality Report for {file_name} | {date_now}",
+        explorative=True,
+        minimal=False,
+        correlations={
+            "pearson": True,
+            "spearman": True,
+            "kendall": False
+        },
+        missing_diagrams={
+            "bar": True,
+            "matrix": True,
+            "heatmap": False
+        }
+    )
+    logger.info("Data quality evaluation completed.")
+    result = {
+        "file_name": file_name,
+        "date": date_now,
+        "profile": profile
+    }
+    return result
 
 
 @task
-def save_evaluation_results(evaluation_results):
+def save_evaluation_results(var_evaluation_root_dir: str, var_evaluation_dir_name: str, 
+                            file_name: str, date: str, profile: ProfileReport) -> None:
     """Save the evaluation results to a database or file"""
-    # Here you would implement the logic to save the results
-    # For example, saving to a database or writing to a file
-    return evaluation_results
+    evaluation_root_dir = Variable.get(var_evaluation_root_dir)
+    evaluation_dir_name = Variable.get(var_evaluation_dir_name)
+    output_file = f"data_evaluation_{file_name}_{date}.html"
+    output_path = Path(evaluation_root_dir) / evaluation_dir_name / output_file
+    if not output_path.parent.exists():
+        raise FileNotFoundError(f"Directory {output_path.parent} does not exist.")
+    profile.to_file(output_path)
+    logger.info(f"Evaluation results saved to {output_path}.")
 
 
 @task
