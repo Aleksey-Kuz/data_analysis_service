@@ -21,7 +21,7 @@ def choice_model():
     return dict()
 
 
-@task 
+@task
 def save_model():
     """ """
     return None
