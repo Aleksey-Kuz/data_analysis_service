@@ -30,7 +30,7 @@ PREPARED_FILE_PREFIX = Config.PREPARED_FILE_PREFIX
     start_date=datetime(2024, 1, 1),
     params={
         "file_name": Param(Variable.get(VAR_DATASET_FILE_NAME)),
-        "file_type": Param(Variable.get(VAR_OUTPUT_FILE_TYPE), enum=["csv", "xlsx"]),},
+        "file_type": Param(Variable.get(VAR_OUTPUT_FILE_TYPE), enum=["csv", "xlsx"])},
     schedule_interval=None,
     catchup=False,
     dagrun_timeout=timedelta(minutes=30),
