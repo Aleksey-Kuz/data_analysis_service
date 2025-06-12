@@ -18,7 +18,7 @@ from tasks.model_tasks import (
 
 
 @dag(
-    dag_id="model_train",
+    dag_id="get_prediction",
     start_date=datetime(2024, 1, 1),
     schedule_interval=None,
     catchup=False,
@@ -27,13 +27,13 @@ from tasks.model_tasks import (
         "User": ["can_edit", "can_read"],
     },
 )
-def model_train():
+def get_prediction():
     """DAG flow"""
     input_data = uploading_data()
     load_model()
     deployed_model()
     get_predictions()
-    save_data()
+    save_data(input_data)
 
 
-model_train_dag = model_train()
+get_prediction_dag = get_prediction()
