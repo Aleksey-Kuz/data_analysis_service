@@ -56,7 +56,7 @@ def model_train():
     splitting_data = data_splitting(prepared_data, VAR_TARGET_FEATURES, VAR_SPLIT_TEST_SIZE)
     models = models_training(splitting_data["data_train"], VAR_MODEL_DEFAULT_CLASSIFICATION, VAR_MODEL_DEFAULT_REGRESSION, VAR_TARGET_FEATURES)
     evaluations = models_evaluating(splitting_data["data_test"], models, VAR_TARGET_FEATURES, VAR_COMPARE_METRIC_REGRESSION, VAR_COMPARE_METRIC_CLASSIFICATION)
-    best_models = choice_models(models, evaluations)
+    best_models = choice_models(models, evaluations, VAR_TARGET_FEATURES)
     save_model(best_models, VAR_MODEL_ROOT_DIR, VAR_MODEL_DIR_NAME, VAR_CURRENT_MODEL_REGRESSION_FILE_NAME, VAR_CURRENT_MODEL_CLASSIFICATION_FILE_NAME)
 
 

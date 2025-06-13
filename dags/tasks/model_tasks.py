@@ -268,44 +268,55 @@ def models_evaluating(
 @task
 def choice_models(
     models: Dict[str, List[BASE_MODEL_TYPE]],
-    evaluations: Dict[str, Dict[str, float]]
+    evaluations: Dict[str, Dict[str, float]],
+    var_target_features: Dict[str, str]
 ) -> Dict[str, BASE_MODEL_TYPE]:
     """
-    Selects the best model for each task type (regression/classification) based on evaluation scores.
+    Select the best model instance for each task type based on evaluation scores.
 
     Parameters:
-        models: A dictionary containing task types as keys ("regression", "classification")
-                and lists of corresponding trained model instances as values.
-        evaluations: A dictionary where each key is a task type, and each value is a dictionary
-                     mapping model class names to their evaluation score.
+        models: Dict with target names as keys and lists of model instances as values.
+            Example: {"market_value": [model1], "failure_category": [model2]}
+        evaluations: Dict with task types as keys ("regression", "classification")
+            and dicts of {model_class_name: score} as values.
+        var_target_features (str): Airflow Variable name with JSON dict {"target_feature": "regression"/"classification"}.
 
     Returns:
-        A dictionary mapping each task type to the best-performing model instance.
+        Dict mapping task type ("regression", "classification") to best model instance.
     """
+    logger.info("Starting model selection based on evaluations.")
+    target_features = json.loads(Variable.get(var_target_features))
     best_models: Dict[str, BASE_MODEL_TYPE] = {}
 
-    for task_type, task_models in models.items():
-        task_evals = evaluations.get(task_type, {})
+    for task_type, evals in evaluations.items():
+        logger.info(f"Selecting best model for task type '{task_type}'.")
+        if not evals:
+            continue
 
         if task_type == "regression":
-            best_metric = min(task_evals.values())
+            best_metric = min(evals.values())
         elif task_type == "classification":
-            best_metric = max(task_evals.values())
+            best_metric = max(evals.values())
         else:
-            raise ValueError(f"Unsupported task type: '{task_type}.'")
-        logger.info(f"Best metric for task type '{task_type}': {best_metric}.")
+            raise ValueError(f"Unsupported task type: '{task_type}'")
 
-        # Find the model name with the best evaluation score
-        best_model_name = next(
-            name for name, score in task_evals.items() if score == best_metric
-        )
-        logger.info(f"Best model for task type '{task_type}': {best_model_name}.")
+        best_model_name = next(name for name, score in evals.items() if score == best_metric)
+        targets_for_task = [t for t, tt in target_features.items() if tt == task_type]
 
-        # Find the corresponding model instance by comparing class names (case-insensitive)
-        for model in task_models:
-            if model.__class__.__name__.lower() == best_model_name.lower():
-                best_models[task_type] = model
+        found_model = None
+        for target in targets_for_task:
+            logger.info(f"Searching for best model '{best_model_name}' for target '{target}'.")
+            for model in models.get(target, []):
+                if model.__class__.__name__.lower() == best_model_name.lower():
+                    found_model = model
+                    break
+            if found_model:
                 break
+        if not found_model:
+            raise ValueError(f"Model '{best_model_name}' for task type '{task_type}' not found among provided models.")
+
+        logger.info(f"Best model for task type '{task_type}' is '{found_model.__class__.__name__}' with score {best_metric:.4f}.")
+        best_models[task_type] = found_model
 
     return best_models
 
