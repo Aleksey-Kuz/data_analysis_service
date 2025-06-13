@@ -262,6 +262,7 @@ def models_evaluating(
             logger.info(f"Model '{model_name}' score for target '{target}': {score:.4f}")
             results[task_type][model_name] = score
 
+    logger.info("Model evaluation completed successfully.")
     return results
 
 
@@ -318,6 +319,7 @@ def choice_models(
         logger.info(f"Best model for task type '{task_type}' is '{found_model.__class__.__name__}' with score {best_metric:.4f}.")
         best_models[task_type] = found_model
 
+    logger.info("Model selection completed successfully.")
     return best_models
 
 
@@ -343,11 +345,13 @@ def save_model(
     Returns:
         None
     """
+    logger.info("Starting model saving process.")
     model_root_dir = Variable.get(var_model_root_dir)
     model_dir_name = Variable.get(var_model_dir_name)
     models_path = Path(model_root_dir) / model_dir_name
     if not models_path.exists():
         raise FileNotFoundError(f"Model directory {models_path} does not exist.")
+    logger.info(f"Model directory found: {models_path}")
     logger.info(f"Saving models to {models_path}.")
     date_now = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 
@@ -362,10 +366,12 @@ def save_model(
         saved_filenames[model_type] = filename
 
     if "regression" in saved_filenames:
+        logger.info(f"Saved regression model to {saved_filenames['regression']}")
         Variable.set(var_current_model_regression_file_name, saved_filenames["regression"])
     if "classification" in saved_filenames:
+        logger.info(f"Saved classification model to {saved_filenames['classification']}")
         Variable.set(var_current_model_classification_file_name, saved_filenames["classification"])
-
+    logger.info("Model saving completed successfully.")
 
 
 @task
