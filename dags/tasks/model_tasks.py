@@ -193,8 +193,8 @@ def models_evaluating(
 
     Parameters:
         data (pd.DataFrame): The test dataset including feature and target columns.
-        models (Dict[str, List[BaseModel]]): Dictionary with model lists per task type.
-            Example: {"regression": [model1, model2], "classification": [model3, model4]}
+        models (Dict[str, List[BaseModel]]): Dictionary with model lists per target feature.
+            Example: {"market_value": [model1], "failure_category": [model2]}
         var_target_features (str): Airflow Variable name with JSON dict {"target_feature": "regression"/"classification"}.
         var_compare_metric_regression (str): Regression metric name (e.g., "rmse", "r2").
         var_compare_metric_classification (str): Classification metric name (e.g., "f1", "accuracy").
@@ -215,58 +215,52 @@ def models_evaluating(
     logger.info(f"Regression metric: {metric_reg}")
     logger.info(f"Classification metric: {metric_cls}")
 
-    results: Dict[str, Dict[str, float]] = {}
+    results: Dict[str, Dict[str, float]] = {
+        "regression": {},
+        "classification": {}
+    }
 
     all_targets = list(target_features.keys())
     features_only = data.drop(columns=all_targets)
 
-    for task_type, model_list in models.items():
-        if task_type not in {"regression", "classification"}:
-            raise ValueError(f"Unsupported task type: '{task_type}'")
+    for target, model_list in models.items():
+        if target not in target_features:
+            raise ValueError(f"Target '{target}' not found in target features mapping.")
 
-        results[task_type] = dict()
-        logger.info(f"Evaluating models for task type '{task_type}'.")
+        task_type = target_features[target]
+        if task_type not in {"regression", "classification"}:
+            raise ValueError(f"Unsupported task type: '{task_type}' for target '{target}'")
+
+        logger.info(f"Evaluating models for target '{target}' with task type '{task_type}'.")
+
+        y_true = data[target]
 
         for model in model_list:
             model_name = model.__class__.__name__
-            logger.info(f"Evaluating model '{model_name}' for task type '{task_type}'.")
+            logger.info(f"Evaluating model '{model_name}' on target '{target}'.")
 
-            # Loop over all relevant targets for this task_type
-            for target, t_type in target_features.items():
-                if t_type != task_type:
-                    continue
-                
-                logger.info(f"Evaluating model '{model_name}' on target '{target}'.")
+            y_pred = model.predict(features_only)
 
-                y_true = data[target]
-                y_pred = model.predict(features_only)
-
-                if task_type == "regression":
-                    logger.info(f"Calculating regression metrics for target '{target}'.")
-                    metric_fn = getattr(RegressionMetrics, metric_reg, None)
-                    if not metric_fn:
-                        raise ValueError(f"Unsupported regression metric: '{metric_reg}'")
+            if task_type == "regression":
+                metric_fn = getattr(RegressionMetrics, metric_reg, None)
+                if not metric_fn:
+                    raise ValueError(f"Unsupported regression metric: '{metric_reg}'")
+                score = metric_fn(y_true, y_pred)
+            else:
+                metric_fn = getattr(ClassificationMetrics, metric_cls, None)
+                if not metric_fn:
+                    raise ValueError(f"Unsupported classification metric: '{metric_cls}'")
+                try:
+                    y_proba = model.predict_proba(features_only)
+                except Exception:
+                    y_proba = None
+                if metric_cls in {"log_loss", "roc_auc"} and y_proba is not None:
+                    score = metric_fn(y_true, y_proba)
+                else:
                     score = metric_fn(y_true, y_pred)
 
-                elif task_type == "classification":
-                    logger.info(f"Calculating classification metrics for target '{target}'.")
-                    metric_fn = getattr(ClassificationMetrics, metric_cls, None)
-                    if not metric_fn:
-                        raise ValueError(f"Unsupported classification metric: '{metric_cls}'")
-
-                    # Use predict_proba if needed
-                    try:
-                        y_proba = model.predict_proba(features_only)
-                    except Exception:
-                        y_proba = None
-
-                    if metric_cls in {"log_loss", "roc_auc"} and y_proba is not None:
-                        score = metric_fn(y_true, y_proba)
-                    else:
-                        score = metric_fn(y_true, y_pred)
-
-                logger.info(f"Model '{model_name}' score for target '{target}': {score:.4f}")
-                results[task_type][model_name] = score
+            logger.info(f"Model '{model_name}' score for target '{target}': {score:.4f}")
+            results[task_type][model_name] = score
 
     return results
 
