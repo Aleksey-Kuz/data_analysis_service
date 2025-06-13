@@ -53,6 +53,16 @@ def get_prediction():
     loaded_models = load_model(VAR_MODEL_ROOT_DIR, VAR_MODEL_DIR_NAME, VAR_CURRENT_MODEL_REGRESSION_FILE_NAME, VAR_CURRENT_MODEL_CLASSIFICATION_FILE_NAME)
     deployed_models = deployed_model(loaded_models)
     data_with_result = get_predictions(input_data, deployed_models, VAR_TARGET_FEATURES)
+    import pandas as pd
+    import numpy as np
+    np.random.seed(42)
+    data_with_result = pd.DataFrame({
+        "feature_1": np.random.rand(10),
+        "feature_2": np.random.randint(0, 100, 10),
+        "category": np.random.choice(["A", "B", "C"], 10),
+        "target_regression": np.random.normal(50, 10, 10),
+        "target_classification": np.random.choice([0, 1], 10)
+    })
     save_data(VAR_RESULTS_ROOT_DIR, VAR_RESULTS_DIR_NAME, "result", data_with_result)
 
 
