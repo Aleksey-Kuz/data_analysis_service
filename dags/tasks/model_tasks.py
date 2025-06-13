@@ -485,6 +485,7 @@ def get_predictions(
     Returns:
         pd.DataFrame: Original data with added prediction columns for each target feature.
     """
+    return True
     logger.info("Starting predictions generation.")
     target_features = json.loads(Variable.get(var_target_features))
     if not isinstance(target_features, dict):
