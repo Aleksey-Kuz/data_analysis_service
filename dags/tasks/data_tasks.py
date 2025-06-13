@@ -6,7 +6,6 @@ from typing import Any, Dict
 
 from airflow.decorators import task
 from airflow.models import Variable
-
 import pandas as pd
 import numpy as np
 from loguru import logger
