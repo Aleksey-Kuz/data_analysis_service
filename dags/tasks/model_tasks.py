@@ -3,7 +3,7 @@
 from datetime import datetime
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Union, Type
+from typing import Any, Dict, List, Union, Type, Optional
 import joblib
 
 from airflow.decorators import task
@@ -308,7 +308,7 @@ def choice_models(
         for target in targets_for_task:
             logger.info(f"Searching for best model '{best_model_name}' for target '{target}'.")
             for model in models.get(target, []):
-                if model.__class__.__name__.lower() == best_model_name.lower():
+                if model.__class__.__name__ == best_model_name:
                     found_model = model
                     break
             if found_model:
@@ -358,7 +358,7 @@ def save_model(
     saved_filenames = {}
 
     for model_type, model in best_models.items():
-        model_class_name = model.__class__.__name__.lower()
+        model_class_name = model.__class__.__name__
         filename = f"{model_type}_{model_class_name}_{date_now}.pkl"
         file_path = models_path / filename
         joblib.dump(model, file_path)
@@ -375,21 +375,134 @@ def save_model(
 
 
 @task
-def load_model():
-    """ """
-    return None
+def load_model(
+    var_model_root_dir: str,
+    var_model_dir_name: str,
+    var_current_model_regression_file_name: str,
+    var_current_model_classification_file_name: str
+) -> Dict[str, Optional[BASE_MODEL_TYPE]]:
+    """
+    Load regression and classification models using their `load()` method defined in BaseModel subclasses.
+
+    Returns:
+        Dict[str, Optional[BASE_MODEL_TYPE]]: Loaded models, if available.
+    """
+    model_root_dir = Variable.get(var_model_root_dir)
+    model_dir_name = Variable.get(var_model_dir_name)
+    path_to_models = Path(model_root_dir) / model_dir_name
+    if not path_to_models.exists():
+        raise FileNotFoundError(f"Model directory {path_to_models} does not exist.")
+    logger.info(f"Model directory found: {path_to_models}")
+    logger.info("Starting model loading process.")
+
+    current_model_classification_file_name = Variable.get(var_current_model_classification_file_name)
+    current_model_regression_file_name = Variable.get(var_current_model_regression_file_name)
+    if not current_model_classification_file_name and not current_model_regression_file_name:
+        logger.warning("No model files specified in Airflow variables. Returning empty models.")
+        return {
+            "regression": None,
+            "classification": None
+        }
+    logger.info(f"Current regression model file: {current_model_regression_file_name}")
+    logger.info(f"Current classification model file: {current_model_classification_file_name}")
+
+    result: Dict[str, Optional[BASE_MODEL_TYPE]] = {
+        "regression": None,
+        "classification": None
+    }
+
+    for task_type, path in {
+        "regression": (path_to_models, current_model_regression_file_name),
+        "classification": (path_to_models, current_model_classification_file_name),
+    }.items():
+        try:
+            file_name = path[1]
+            path_to_model = path[0] / file_name
+            if not path_to_model.exists():
+                raise ValueError(f"Model file '{file_name}' does not exist in '{path[0]}'. Skipping loading for {task_type}.")
+
+            model_type_str = file_name.split("_")[1]
+
+            model_cls = MODEL_REGISTRY.get(task_type).get(model_type_str)
+            if not model_cls:
+                raise ValueError(f"Unknown model type '{model_type_str}' for task '{task_type}'")
+
+            if model_cls == CatBoostModel:
+                model = model_cls(task_type=task_type)
+            else:
+                model = model_cls()
+            
+            model.load(path_to_model)
+            if not isinstance(model, BASE_MODEL_TYPE):
+                raise TypeError(f"Loaded model is not an instance of BASE_MODEL_TYPE: {model}")
+
+            result[task_type] = model
+            logger.info(f"Loaded {task_type} model '{model_type_str}' from '{path_to_model}'")
+
+        except Exception as error:
+            logger.warning(f"Could not load {task_type} model: {error}")
+
+    return result
 
 
 @task
-def deployed_model():
-    """ """
-    return None
+def deployed_model(
+    loaded_models: Dict[str, Optional[BASE_MODEL_TYPE]]
+) -> Dict[str, BASE_MODEL_TYPE]:
+    """
+    Returns models ready for inference. If none are found, raises an error.
+    """
+    deployed: Dict[str, BASE_MODEL_TYPE] = {}
+
+    for task_type in ["regression", "classification"]:
+        model = loaded_models.get(task_type)
+        if model is not None:
+            deployed[task_type] = model
+            logger.info(f"Deployed {task_type} model: {model.__class__.__name__}")
+        logger.debug(f"Deployed {task_type} model: {model}")
+    if not deployed:
+        raise ValueError("No models available for deployment.")
+
+    return deployed
 
 
 @task
-def get_predictions():
-    """ """
-    return None
+def get_predictions(
+    data: pd.DataFrame,
+    models: Dict[str, BASE_MODEL_TYPE],
+    var_target_features: str
+) -> pd.DataFrame:
+    """
+    Apply deployed models to the given data and return a DataFrame with predictions.
+
+    Parameters:
+        data (pd.DataFrame): Input data with features only (no target columns).
+        models (Dict[str, BASE_MODEL_TYPE]): Dictionary with trained model per task type.
+            Example: {"regression": model_obj, "classification": model_obj}
+        var_target_features (str): Airflow variable name with JSON:
+            {"target1": "regression", "target2": "classification"}
+
+    Returns:
+        pd.DataFrame: Original data with added prediction columns for each target feature.
+    """
+    logger.info("Starting predictions generation.")
+    target_features = json.loads(Variable.get(var_target_features))
+    if not isinstance(target_features, dict):
+        raise ValueError(f"Expected target_features to be a dict, got {type(target_features)} instead.")
+    logger.info(f"Target features: {list(target_features.keys())}.")
+    result = data.copy()
+
+    for target_name, task_type in target_features.items():
+        model = models.get(task_type)
+        if not model:
+            raise ValueError(f"No model provided for task type '{task_type}'. Error processing target '{target_name}'.")
+        logger.info(f"Generating predictions for target '{target_name}' using {model.__class__.__name__}")
+        preds = model.predict(data)
+        result[target_name] = preds
+        logger.info(f"Predictions for target '{target_name}' added to the result DataFrame.")
+
+    logger.info("Predictions generation completed successfully.")
+    return result
 
 
 @task
