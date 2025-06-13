@@ -24,7 +24,7 @@ class CatBoostModel(BaseModel):
         """ Create new instance by task_type """
         if self.task_type == "regression":
             self.model = CatBoostRegressor(**self.params)
-        elif self.task_type == "classifier":
+        elif self.task_type == "classification":
             self.model = CatBoostClassifier(**self.params)
         else:
             raise ValueError("The wrong type of CatBoost model is specified.")
@@ -35,7 +35,7 @@ class CatBoostModel(BaseModel):
         if self.task_type == "regression":
             config_data["loss_function"] = CatBoostModelConf.reg_loss_function
             config_data["eval_metric"] = CatBoostModelConf.reg_eval_metric
-        elif self.task_type == "classifier":
+        elif self.task_type == "classification":
             config_data["loss_function"] = CatBoostModelConf.cla_loss_function
             config_data["eval_metric"] = CatBoostModelConf.cla_eval_metric
         else:
